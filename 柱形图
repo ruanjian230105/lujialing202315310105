@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="box" style="height: 600px"></div>
+    <div id="box" style="height: 600px;width:400px" ></div>
   </div>
 </template>
 
@@ -68,7 +68,7 @@ onMounted(async () => {
       },
       yAxis: {
         type: "value",
-        name: "2024年",
+        name: "2025年",
       },
       series: [
         {
