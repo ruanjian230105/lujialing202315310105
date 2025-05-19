@@ -1,0 +1,98 @@
+<template>
+  <div>
+    <div id="box" style="height: 600px"></div>
+  </div>
+</template>
+
+<script setup>
+import * as echarts from "echarts";
+import axios from "axios";
+import { onMounted, onUnmounted } from "vue";
+
+onMounted(async () => {
+  const chartDom = document.getElementById("box");
+  const mEcharts = echarts.init(chartDom);
+  // 显示加载状态
+  mEcharts.showLoading();
+    const [testDataRes, apiDataRes] = await Promise.all([
+      axios.get('./test_data.json'),
+      axios.get("http://localhost:3000/data")
+    ]);
+    const testData = testDataRes.data;
+    console.log('测试数据:', testData);
+    const apiData = apiDataRes.data;
+    // 按性别分组
+    const maleData = apiData
+      .filter(item => item.sex === "男")
+      .map(item => item.value);
+    const femaleData = apiData
+      .filter(item => item.sex === "女")
+      .map(item => item.value);
+    // 获取专业名称（去重）
+    const specNames = [...new Set(apiData.map(item => item.specName))];
+    const option = {
+      title: {
+        text: "某学院各专业男女生统计"
+      },
+      tooltip: {
+        trigger: "axis",
+        axisPointer: {
+          type: "shadow",
+        },
+        formatter: function (params) {
+          const colorMap = {
+            "男生": "#800080",
+            "女生": "#37E136",
+          };
+          let result = params[0].name + "<br>";
+          params.forEach((param, index) => {
+            if (index > 0) result += "<br>";
+            result += `<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:${colorMap[param.seriesName]};"></span>`;
+            result += `${param.seriesName} ${param.value}`;
+          });
+          return result;
+        },
+      },
+      toolbox: {
+        feature: {
+          saveAsImage: {}
+        }
+      },
+      legend: {
+        data: ["男生", "女生"],
+        top: 20
+      },
+      xAxis: {
+        type: "category",
+        data: specNames,
+      },
+      yAxis: {
+        type: "value",
+        name: "2024年",
+      },
+      series: [
+        {
+          name: "男生",
+          type: "bar",
+          data: maleData,
+          itemStyle: {
+            color: "#800080",
+          },
+        },
+        {
+          name: "女生",
+          type: "bar",
+          data: femaleData,
+          itemStyle: {
+            color: "#37E136",
+          },
+        },
+      ],
+    };
+    mEcharts.setOption(option);
+    mEcharts.hideLoading();
+});
+</script>
+
+<style>
+</style>
